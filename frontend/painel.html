@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel do Técnico</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #eee;
+    }
+    button {
+      padding: 10px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Painel do Técnico</h2>
+
+  <button onclick="gerarPDF()">📄 Gerar Relatório em PDF</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Modelo</th>
+        <th>Série</th>
+        <th>Defeito</th>
+        <th>Diagnóstico</th>
+        <th>Sugestão</th>
+        <th>Peças trocadas</th>
+
+      </tr>
+    </thead>
+    <tbody id="tabela"></tbody>
+  </table>
+
+  <script>
+    async function carregarHistorico() {
+      const res = await fetch("http://localhost:3000/historico");
+      const dados = await res.json();
+
+      const tabela = document.getElementById("tabela");
+      tabela.innerHTML = "";
+
+      dados.forEach(item => {
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+  <td>${new Date(item.data).toLocaleString()}</td>
+  <td>${item.modelo}</td>
+  <td>${item.serie}</td>
+  <td>${item.defeito}</td>
+  <td>${item.diagnostico}</td>
+  <td>${item.sugestao}</td>
+  <td>${item.pecas || "-"}</td>
+
+`;
+
+        tabela.appendChild(linha);
+      });
+    }
+
+    function gerarPDF() {
+      window.open("http://localhost:3000/relatorio-pdf", "_blank");
+    }
+
+    carregarHistorico();
+  </script>
+
+</body>
+</html>

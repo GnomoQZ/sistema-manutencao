@@ -1,0 +1,34 @@
+[
+  {
+    "id": "D001",
+    "nome": "Não extrai café",
+    "etapas": ["mecanico", "hidraulico", "eletrico"],
+    "regra": "Seguir ordem completa",
+    "perguntas": [
+      "A bomba faz barulho?",
+      "O reservatório está encaixado?",
+      "Já testou sem cápsula?"
+    ]
+  },
+  {
+    "id": "D002",
+    "nome": "Não liga",
+    "etapas": ["eletrico"],
+    "regra": "Descartar mecânico e hidráulico",
+    "perguntas": [
+      "A tomada está funcionando?",
+      "A chave liga/desliga tem continuidade?",
+      "O fusível térmico está ok?"
+    ]
+  },
+  {
+    "id": "D003",
+    "nome": "Não aquece / café frio",
+    "etapas": ["eletrico"],
+    "perguntas": [
+      "A resistência tem continuidade?",
+      "O termostato está fechado?",
+      "Chega tensão no aquecimento?"
+    ]
+  }
+]

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>IA Assistente de Manutenção</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      margin-left: 5px;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>IA – Diagnóstico de Máquina de Café</h2>
+
+  <input
+    type="text"
+    id="defeito"
+    placeholder="Ex: não liga, não extrai café"
+  >
+ <input id="modelo" placeholder="Modelo da máquina" />
+ <input id="serie" placeholder="Número de série" />
+ <br><br>
+ <textarea id="pecas" placeholder="Peças trocadas (ex: bomba, mangueira, válvula)"></textarea>
+<br><br>
+
+
+  <button onclick="diagnosticar()">Diagnosticar</button>
+
+  <pre id="resultado">Aguardando diagnóstico...</pre>
+
+<script>
+let sessionId = null;
+let aguardandoResposta = false;
+
+async function diagnosticar() {
+  const input = document.getElementById("defeito");
+  const resultado = document.getElementById("resultado");
+
+  let payload = { sessionId };
+if (!aguardandoResposta) {
+  payload.defeito = input.value;
+  payload.modelo = document.getElementById("modelo").value;
+  payload.serie = document.getElementById("serie").value;
+  payload.pecas = document.getElementById("pecas").value;
+
+  if (!payload.modelo || !payload.serie) {
+    alert("Informe modelo e número de série");
+    return;
+  }
+  
+
+}
+
+  if (!aguardandoResposta) {
+    // primeiro envio → defeito
+    payload.defeito = input.value;
+  } else {
+    // próximos envios → resposta
+    payload.resposta = input.value;
+  }
+
+  if (!input.value) {
+    alert("Digite uma informação");
+    return;
+  }
+
+  try {
+    const resposta = await fetch("http://localhost:3000/diagnostico", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const dados = await resposta.json();
+
+    sessionId = dados.sessionId || sessionId;
+
+    if (dados.pergunta) {
+      resultado.innerText = "IA: " + dados.pergunta;
+      aguardandoResposta = true;
+      input.value = "";
+      input.placeholder = "Responda: sim ou não";
+    } else {
+      resultado.innerText =
+        "Diagnóstico: " + dados.diagnostico +
+        "\nSugestão: " + dados.sugestao;
+      input.disabled = true;
+    }
+
+  } catch (erro) {
+    resultado.innerText = "Erro ao conectar com o servidor";
+  }
+}
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+[
+  {
+    "data": "2026-02-17T19:10:49.313Z",
+    "modelo": "modo",
+    "serie": "3223",
+    "defeito": "Não extrai café",
+    "respostas": [
+      "sim",
+      "não",
+      "sim"
+    ],
+    "diagnostico": "Falha no sistema de extração",
+    "sugestao": "Verificar bomba, mangueiras, válvula e sensores"
+  },
+  {
+    "data": "2026-02-17T19:10:49.328Z",
+    "modelo": "modo",
+    "serie": "3223",
+    "defeito": "Não extrai café",
+    "respostas": [
+      "sim",
+      "não",
+      "sim",
+      "sim"
+    ],
+    "diagnostico": "Falha no sistema de extração",
+    "sugestao": "Verificar bomba, mangueiras, válvula e sensores"
+  },
+  {
+    "data": "2026-02-17T19:11:17.249Z",
+    "modelo": "modo",
+    "serie": "3244",
+    "defeito": "Não extrai café",
+    "respostas": [
+      "não extrai",
+      "sim",
+      "não"
+    ],
+    "diagnostico": "Falha no sistema de extração",
+    "sugestao": "Verificar bomba, mangueiras, válvula e sensores"
+  },
+  {
+    "data": "2026-02-17T20:26:36.001Z",
+    "modelo": "modo",
+    "serie": "2536",
+    "defeito": "Não liga",
+    "respostas": [
+      "sim",
+      "não",
+      "sim"
+    ],
+    "diagnostico": "Falha elétrica",
+    "sugestao": "Verificar fusível, botão liga/desliga e placa eletrônica"
+  }
+]
