@@ -1,9 +1,9 @@
-import express from "express";
-import PDFDocument from "pdfkit";
-import db from "../database.js";
+import { Router } from "express";
+const router = Router();
 
-const router = express.Router();
+router.get("/", (req, res) => res.json({ ok: true }));
 
+export default router;
 // ================= FLUXOS INTELIGENTES =================
 
 const fluxos = {
