@@ -38,12 +38,16 @@ Projeto criado com fins de estudo e portfólio profissional, aplicando conceitos
 ## 📂 Estrutura do Projeto
 sistema-manutencao/
 ├── backend/
-│ ├── server.js
-│ └── package.json
+│   ├── server.js
+│   ├── routes/
+│   │   └── assistente.js
+│   ├── services/
+│   │   └── fluxoDiagnostico.js
+│   └── data/
+│       └── chamados.json
 ├── frontend/
-│ ├── index.html
-│ ├── dashboard.html
-│ └── painel.html
+│   ├── index.html   ← chat do assistente
+│   └── painel.html  ← painel técnico
 └── README.md
 
 ---
