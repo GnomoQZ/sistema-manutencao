@@ -1,20 +1,18 @@
-import sqlite3 from "sqlite3";
+import Database from "better-sqlite3";
 
-const db = new sqlite3.Database("./historico.db");
+const db = new Database("dados.db");
 
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS atendimentos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      data TEXT,
-      modelo TEXT,
-      serie TEXT,
-      defeito TEXT,
-      diagnostico TEXT,
-      sugestao TEXT,
-      pecas TEXT
-    )
-  `);
-});
+// cria tabela se não existir
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS atendimentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    data TEXT,
+    modelo TEXT,
+    serie TEXT,
+    defeito TEXT,
+    diagnostico TEXT,
+    sugestao TEXT
+  )
+`).run();
 
 export default db;
