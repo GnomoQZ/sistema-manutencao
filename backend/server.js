@@ -11,17 +11,18 @@ app.use(express.json());
 const db = new sqlite3.Database("./database.db");
 
 db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS atendimentos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      data TEXT,
-      modelo TEXT,
-      serie TEXT,
-      defeito TEXT,
-      diagnostico TEXT,
-      sugestao TEXT
-    )
-  `);
+  db.prepare(`
+  INSERT INTO atendimentos 
+  (data, modelo, serie, defeito, diagnostico, sugestao)
+  VALUES (?, ?, ?, ?, ?, ?)
+`).run(
+  new Date().toISOString(),
+  sessao.modelo,
+  sessao.serie,
+  sessao.defeito,
+  diagnostico,
+  sugestao
+);
 });
 
 // ================= FLUXOS =================
