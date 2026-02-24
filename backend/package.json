@@ -1,5 +1,5 @@
 {
-  "name": "assistente-tecnico-maquina-cafe",
+  "name":  "ia-manutencao-backend",
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",

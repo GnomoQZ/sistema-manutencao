@@ -38,6 +38,7 @@ Projeto criado com fins de estudo e portfólio profissional, aplicando conceitos
 ## 📂 Estrutura do Projeto
 sistema-manutencao/
 ├── backend/
+<<<<<<< HEAD
 │   ├── server.js
 │   ├── routes/
 │   │   └── assistente.js
@@ -48,6 +49,14 @@ sistema-manutencao/
 ├── frontend/
 │   ├── index.html   ← chat do assistente
 │   └── painel.html  ← painel técnico
+=======
+│ ├── server.js
+│ └── package.json
+├── frontend/
+│ ├── index.html
+│ ├── dashboard.html
+│ └── painel.html
+>>>>>>> ab61844 (atualizacao do sistema)
 └── README.md
 
 ---

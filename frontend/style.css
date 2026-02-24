@@ -1,0 +1,82 @@
+body {
+  background: #ece5dd;
+  font-family: Arial, sans-serif;
+}
+
+.chat-container {
+  width: 400px;
+  height: 600px;
+  margin: 30px auto;
+  background: #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+.chat-header {
+  background: #075e54;
+  color: white;
+  padding: 15px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.chat-box {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* BALÕES */
+.msg {
+  max-width: 75%;
+  padding: 10px 14px;
+  margin: 6px 0;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.bot {
+  background: #ffffff;
+  align-self: flex-start;
+  border-top-left-radius: 0;
+}
+
+.user {
+  background: #dcf8c6;
+  align-self: flex-end;
+  border-top-right-radius: 0;
+}
+
+/* OPÇÕES COMO CHAT */
+.opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background: #f0f0f0;
+}
+
+.opcoes button {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: none;
+  background: #075e54;
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.opcoes button:hover {
+  opacity: 0.9;
+}
+
+/* INPUT (opcional no futuro) */
+.chat-input {
+  display: none;
+}
