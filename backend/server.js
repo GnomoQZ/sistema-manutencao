@@ -4,256 +4,207 @@ import express from "express";
 import cors from "cors";
 import db from "./database.js";
 
-
-function analisarHistorico(defeito) {
-  const historico = JSON.parse(fs.readFileSync("historico.json"));
-
-  const ocorrencias = historico.filter(
-    h => h.defeito.toLowerCase() === defeito.toLowerCase()
-  );
-
-  if (ocorrencias.length === 0) {
-    return null;
-  }
-
-  const contador = {};
-
-  ocorrencias.forEach(h => {
-    contador[h.diagnostico] = (contador[h.diagnostico] || 0) + 1;
-  });
-
-  const diagnosticoMaisComum = Object.keys(contador)
-    .reduce((a, b) => contador[a] > contador[b] ? a : b);
-
-  return {
-    total: ocorrencias.length,
-    diagnosticoMaisComum
-  };
-}
-
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
-// rota de teste
-app.get("/", (req, res) => {
-  res.send("IA de Manutenção de Máquina de Café rodando");
-});
+// ================= FLUXOS INTELIGENTES =================
 
-// rota principal da IA
+const fluxos = {
+  Eletrica: [
+    {
+      pergunta: "A máquina liga?",
+      sim: 1,
+      nao: "Falha na alimentação elétrica"
+    },
+    {
+      pergunta: "Algum LED acende?",
+      sim: "Possível falha na placa eletrônica",
+      nao: "Verificar fusível ou cabo de força"
+    }
+  ],
+
+  Mecanica: [
+    {
+      pergunta: "O motor faz barulho?",
+      sim: 1,
+      nao: "Motor travado ou queimado"
+    },
+    {
+      pergunta: "As engrenagens giram?",
+      sim: "Desgaste no grupo extrator",
+      nao: "Engrenagens quebradas ou presas"
+    }
+  ],
+
+  Hidraulica: [
+    {
+      pergunta: "A bomba faz barulho?",
+      sim: 1,
+      nao: "Bomba sem alimentação ou queimada"
+    },
+    {
+      pergunta: "Sai água pelo bico?",
+      sim: "Possível entupimento parcial",
+      nao: "Mangueira ou válvula obstruída"
+    }
+  ]
+};
+
+// ================= SESSÕES =================
+
 const sessoes = {};
 
+// ================= ROTAS =================
+
+app.get("/", (req, res) => {
+  res.send("🤖 IA Técnica de Máquina de Café rodando");
+});
+
 app.post("/diagnostico", (req, res) => {
-  let { defeito, resposta, sessionId } = req.body;
+  let { defeito, resposta, sessionId, categoria, modelo, serie } = req.body;
 
   // cria sessão
   if (!sessionId) {
     sessionId = Date.now().toString();
     sessoes[sessionId] = {
       defeito,
-      etapa: 0,
+      categoria: null,
+      indice: 0,
       respostas: [],
-      modelo: req.body.modelo,
-      serie: req.body.serie,
-
+      modelo,
+      serie
     };
+
+    return res.json({
+      sessionId,
+      pergunta: "Qual a categoria do problema?",
+      opcoes: ["Eletrica", "Mecanica", "Hidraulica"]
+    });
   }
 
   const sessao = sessoes[sessionId];
 
-  if (resposta) {
-    sessao.respostas.push(resposta.toLowerCase());
-    sessao.etapa++;
-  }
-
-  // normaliza 
-  
-  const defeitoNormalizado = sessao.defeito
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-  const aprendizado = analisarHistorico(
-  defeitoNormalizado.includes("nao liga")
-    ? "Não liga"
-    : defeitoNormalizado.includes("nao extrai")
-      ? "Não extrai café"
-      : ""
-);
-
-
-  // FLUXO: NÃO 
-  if (aprendizado && aprendizado.total >= 3) {
-  return res.json({
-    sessionId,
-    aprendizado: true,
-    mensagem: `Com base em ${aprendizado.total} atendimentos anteriores, o problema mais comum é:`,
-    diagnostico: aprendizado.diagnosticoMaisComum
-  });
-}
-
-  if (defeitoNormalizado.includes("nao liga")) {
-    
-    const perguntas = [
-      "A tomada tem energia?",
-      "O cabo de força está em boas condições?",
-      "Algum LED acende?"
-    ];
-
-    if (sessao.etapa < perguntas.length) {
-      return res.json({
-        sessionId,
-        pergunta: perguntas[sessao.etapa]
-      });
-    }
-
-    const registro = {
-  data: new Date().toISOString(),
-  modelo: sessao.modelo,
-  serie: sessao.serie,
-  defeito: "Não liga",
-  pecas: sessao.pecas,
-  respostas: sessao.respostas,
-  diagnostico: "Falha elétrica",
-  sugestao: "Verificar fusível, botão liga/desliga e placa eletrônica"
-};
-
-db.run(
-  `
-  INSERT INTO atendimentos 
-  (data, modelo, serie, defeito, diagnostico, sugestao, pecas)
-  VALUES (?, ?, ?, ?, ?, ?, ?)
-  `,
-  [
-    new Date().toISOString(),
-    sessao.modelo,
-    sessao.serie,
-    defeito,
-    respostaFinal,
-    sugestaoFinal,
-    sessao.pecas
-  ],
-  function (err) {
-    if (err) {
-      console.error("Erro ao salvar no banco:", err);
-      return res.status(500).json({ erro: "Erro ao salvar atendimento" });
-    }
-
-    res.json({
-      mensagem: respostaFinal,
-      sugestao: sugestaoFinal
+  // define categoria
+  if (!sessao.categoria) {
+    sessao.categoria = resposta;
+    return res.json({
+      sessionId,
+      pergunta: fluxos[sessao.categoria][0].pergunta,
+      opcoes: ["Sim", "Não"]
     });
   }
-);
- return res.json({
-  sessionId,
-  diagnostico: registro.diagnostico,
-  sugestao: registro.sugestao
-});
 
-    
+  // fluxo inteligente
+  const fluxo = fluxos[sessao.categoria];
+  const etapa = fluxo[sessao.indice];
+
+  sessao.respostas.push(resposta);
+
+  if (resposta.toLowerCase() === "sim") {
+    if (typeof etapa.sim === "number") {
+      sessao.indice = etapa.sim;
+      return res.json({
+        sessionId,
+        pergunta: fluxo[sessao.indice].pergunta,
+        opcoes: ["Sim", "Não"]
+      });
+    } else {
+      return finalizar(sessao, etapa.sim, res);
+    }
   }
 
-  // FLUXO: NÃO EXTRAI
-  if (aprendizado && aprendizado.total >= 3) {
+  if (resposta.toLowerCase() === "não" || resposta.toLowerCase() === "nao") {
+    if (typeof etapa.nao === "number") {
+      sessao.indice = etapa.nao;
+      return res.json({
+        sessionId,
+        pergunta: fluxo[sessao.indice].pergunta,
+        opcoes: ["Sim", "Não"]
+      });
+    } else {
+      return finalizar(sessao, etapa.nao, res);
+    }
+  }
+
+  return res.json({ erro: "Resposta inválida" });
+});
+
+// ================= FINALIZAÇÃO =================
+
+function finalizar(sessao, diagnostico, res) {
+  const sugestao =
+    "Realizar inspeção técnica conforme manual do fabricante e normas de segurança";
+
+  // salva no banco
+  db.run(
+    `
+    INSERT INTO atendimentos 
+    (data, modelo, serie, defeito, diagnostico, sugestao)
+    VALUES (?, ?, ?, ?, ?, ?)
+    `,
+    [
+      new Date().toISOString(),
+      sessao.modelo,
+      sessao.serie,
+      sessao.defeito,
+      diagnostico,
+      sugestao
+    ]
+  );
+
   return res.json({
-    sessionId,
-    aprendizado: true,
-    mensagem: `Com base em ${aprendizado.total} atendimentos anteriores, o problema mais comum é:`,
-    diagnostico: aprendizado.diagnosticoMaisComum
+    diagnostico,
+    sugestao
   });
 }
 
-  if (defeitoNormalizado.includes("nao extrai")) {
-    const perguntas = [
-      "A bomba faz barulho?",
-      "Sai água sem cápsula?",
-      "A cápsula é perfurada?"
-    ];
+// ================= PDF =================
 
-    if (sessao.etapa < perguntas.length) {
-      return res.json({
-        sessionId,
-        pergunta: perguntas[sessao.etapa]
-      });
+app.get("/relatorio-pdf", (req, res) => {
+  db.all("SELECT * FROM atendimentos", (err, rows) => {
+    if (err || rows.length === 0) {
+      return res.status(400).send("Nenhum atendimento registrado");
     }
 
-    const registro = {
-  data: new Date().toISOString(),
-  modelo: sessao.modelo,
-  serie: sessao.serie,
-  defeito: "Não extrai café",
-  respostas: sessao.respostas,
-  diagnostico: "Falha no sistema de extração",
-  sugestao: "Verificar bomba, mangueiras, válvula e sensores"
-  
-};
+    const doc = new PDFDocument();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "inline; filename=relatorio_maquina.pdf");
+    doc.pipe(res);
 
-const historico = JSON.parse(fs.readFileSync("historico.json"));
-historico.push(registro);
-fs.writeFileSync("historico.json", JSON.stringify(historico, null, 2));
+    doc.fontSize(18).text("Relatório Técnico - Máquina de Café", { align: "center" });
+    doc.moveDown();
 
-return res.json({
-  sessionId,
-  diagnostico: registro.diagnostico,
-  sugestao: registro.sugestao
-});
+    rows.forEach((item, i) => {
+      doc.fontSize(12).text(`Atendimento ${i + 1}`);
+      doc.text(`Data: ${new Date(item.data).toLocaleString()}`);
+      doc.text(`Modelo: ${item.modelo || "-"}`);
+      doc.text(`Série: ${item.serie || "-"}`);
+      doc.text(`Defeito: ${item.defeito}`);
+      doc.text(`Diagnóstico: ${item.diagnostico}`);
+      doc.text(`Sugestão: ${item.sugestao}`);
+      doc.moveDown();
+    });
 
-  }
-
-  return res.json({
-    mensagem: "Defeito não reconhecido"
+    doc.end();
   });
 });
-app.get("/relatorio-pdf", (req, res) => {
-  const historico = JSON.parse(fs.readFileSync("historico.json"));
 
-  if (historico.length === 0) {
-    return res.status(400).send("Nenhum atendimento registrado");
-  }
-
-  const doc = new PDFDocument();
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", "inline; filename=relatorio_maquina.pdf");
-
-  doc.pipe(res);
-
-  doc.fontSize(18).text("Relatório Técnico da Máquina", { align: "center" });
-  doc.moveDown();
-
-  historico.forEach((item, index) => {
-    doc.fontSize(12).text(`Atendimento ${index + 1}`);
-    doc.text(`Data: ${new Date(item.data).toLocaleString()}`);
-    doc.text(`Defeito: ${item.defeito}`);
-    doc.text(`Respostas: ${item.respostas.join(", ")}`);
-    doc.text(`Diagnóstico: ${item.diagnostico}`);
-    doc.text(`Sugestão: ${item.sugestao}`);
-    doc.moveDown();
-    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
-    doc.moveDown();
-  });
-
-  doc.end();
-});
+// ================= HISTÓRICO =================
 
 app.get("/historico", (req, res) => {
-  db.all(
-    "SELECT * FROM atendimentos ORDER BY id DESC",
-    (err, rows) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({
-          erro: "Erro ao buscar histórico"
-        });
-      }
-
-      res.json(rows);
+  db.all("SELECT * FROM atendimentos ORDER BY id DESC", (err, rows) => {
+    if (err) {
+      return res.status(500).json({ erro: "Erro ao buscar histórico" });
     }
-  );
+    res.json(rows);
+  });
 });
 
-// servidor
-app.listen(3000, () => {
-  console.log("Servidor rodando na porta 3000");
-});
+// ================= SERVIDOR =================
 
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("🚀 Servidor rodando na porta " + PORT);
+});
